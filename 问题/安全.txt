@@ -15,9 +15,9 @@ Redis 可能执行过 FLUSHALL 方法，整个 Redis 数据库被清空
 1.禁止一些高危命令
 修改 redis.conf 文件，添加
 
-rename-command FLUSHALL ""
-rename-command CONFIG   ""
-rename-command EVAL     ""
+rename-command FLUSHALL "随机数"
+rename-command CONFIG   "随机数"
+rename-command EVAL     "随机数"
 来禁用远程修改 DB 文件地址
 
 2.以低权限运行 Redis 服务

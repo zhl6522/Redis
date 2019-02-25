@@ -51,3 +51,78 @@ Redis调试工具：
 
 		返回值
 		没有统一标准的返回值, 无限的返回服务器端处理的命令流.
+		
+很多时候Redis被误解并乱用了，造成的Redis印象：耗内存、价格成本很高：
+	1. 为了“赶时髦”或者对于Mysql的“误解”在一个并发量很低的系统使用Redis，将原来放在Mysql数据全部放在Redis中。
+	----（Redis比较适用于高并发系统，如果是一些复杂Mis系统，用Redis反而麻烦，因为单从功能讲Mysql要更为强大，而且Mysql的性能其实已经足够了。）
+	2. 觉得Redis就是个KV缓存
+	 -----（Redis支持多数据结构，并且具有很多其他丰富的功能）
+	3. 喜欢做各种对比，比如Mysql, Hbase, Redis等等
+	-----（每种数据库都有自己的使用场景，比如Hbase吧，我们系统的个性化数据有1T，此时放在Redis根本就不合适，而是将一些热点数据放在Redis）
+	总之就是在合适的场景，选择合适的数据库产品。
+	
+	一次string转化为hash的优化
+		1. 场景：
+			用户id: userId,			（1000000用户）
+			用户微博数量：weiboCount
+			
+		2. 实现方法：
+			(1) 使用Redis字符串数据结构, userId为key, weiboCount作为Value
+			(2) 使用Redis哈希结构，hashkey只有一个, key="allUserWeiboCount",field=userId,fieldValue= weiboCount
+			(3) 使用Redis哈希结构,  hashkey为多个, key=userId/100, field=userId%100, fieldValue= weiboCount
+			
+			前两种比较容易理解，第三种方案解释一下：每个hashKey存放100个hash-kv，field=userId%100
+			
+		3. 获取方法：
+			#获取userId=5003用户的微博数  
+			(1) get u:5003  
+			(2) hget allUser u:5003  
+			(3) hget u:50 f:3  
+
+		4. 内存占用量对比(100万用户 userId u:1~u:1000000) 
+			#方法一 Memory  
+			used_memory:118002640  
+			used_memory_human:112.54M  
+			used_memory_rss:127504384  
+			used_memory_peak:118002640  
+			used_memory_peak_human:112.54M  
+			used_memory_lua:36864  
+			mem_fragmentation_ratio:1.08  
+			mem_allocator:jemalloc-3.6.0  
+			---------------------------------------------------  
+			#方法二 Memory  
+			used_memory:134002968  
+			used_memory_human:127.80M  
+			used_memory_rss:144261120  
+			used_memory_peak:134002968  
+			used_memory_peak_human:127.80M  
+			used_memory_lua:36864  
+			mem_fragmentation_ratio:1.08  
+			mem_allocator:jemalloc-3.6.0  
+			--------------------------------------------------------  
+			#方法三 Memory  
+			used_memory:19249088  
+			used_memory_human:18.36M  
+			used_memory_rss:26558464  
+			used_memory_peak:134002968  
+			used_memory_peak_human:127.80M  
+			used_memory_lua:36864  
+			mem_fragmentation_ratio:1.38  
+			mem_allocator:jemalloc-3.6.0  
+		
+	结论：
+		在使用Redis时，要选择合理的数据结构解决实际问题，那样既可以提高效率又可以节省内存。所以此次优化方案三为最佳。
+
+Redis Cluster 3.0.5 集群实战：	
+	https://mp.weixin.qq.com/s?__biz=MzA3MzYwNjQ3NA==&mid=400315209&idx=3&sn=4db6b96503aa8f9726907ba75aae7050&scene=2&srcid=11039LoaHY6uXMvS9ZnEwSP7&from=timeline&isappinstalled=0#wechat_redirect
+		
+	
+		
+		
+		
+		
+		
+		
+		
+		
+参考文档：https://blog.csdn.net/wabiaozia/article/details/81073625
