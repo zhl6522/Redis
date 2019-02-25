@@ -1,6 +1,6 @@
 
 Redis调试工具：
-	minitor		redis-cli -a "password" -n 13 monitor
+	minitor/redis-benchmark			redis-cli -a "password" -n 13 monitor			./redis-benchmark -c 10 -n 100000
 		MONITOR 是一个调试命令，返回服务器处理的每一个命令，它能帮助我们了解在数据库上发生了什么操作，可以通过redis-cli和telnet命令使用.
 
 		$ redis-cli monitor
@@ -27,3 +27,27 @@ Redis调试工具：
 		QUIT
 		+OK
 		Connection closed by foreign host.
+		
+		使用QUIT命令来停止通过telnet使用MONITOR返回的输出.
+		##MONITOR 性能消耗
+		由于MONITOR命令返回 服务器处理的所有的 命令, 所以在性能上会有一些消耗.
+		在不运行MONITOR命令的情况下，benchmark的测试结果:
+
+		$ src/redis-benchmark -c 10 -n 100000 -q
+		PING_INLINE: 101936.80 requests per second
+		PING_BULK: 102880.66 requests per second
+		SET: 95419.85 requests per second
+		GET: 104275.29 requests per second
+		INCR: 93283.58 requests per second
+		在运行MONITOR命令的情况下，benchmark的测试结果: (redis-cli monitor > /dev/null):
+
+		$ src/redis-benchmark -c 10 -n 100000 -q
+		PING_INLINE: 58479.53 requests per second
+		PING_BULK: 59136.61 requests per second
+		SET: 41823.50 requests per second
+		GET: 45330.91 requests per second
+		INCR: 41771.09 requests per second
+		在这种特定的情况下，运行一个MONITOR命令能够降低50%的吞吐量，运行多个MONITOR命令 降低的吞吐量更多.
+
+		返回值
+		没有统一标准的返回值, 无限的返回服务器端处理的命令流.
