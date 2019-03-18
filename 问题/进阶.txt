@@ -1,4 +1,21 @@
 
+Redis中有个设置时间过期的功能，即通过setex或者expire实现，目前redis没有针对hash结构提供hsetex（）这样的方法，所以如果想对hash进行expires设置，可以采用下面的方法：
+127.0.0.1:6379[13]> hset expire:me name tom
+(integer) 1
+127.0.0.1:6379[13]> hget expire:me name
+"tom"
+127.0.0.1:6379[13]> expire expire:me 10
+(integer) 1
+127.0.0.1:6379[13]> hget expire:me name
+"tom"
+127.0.0.1:6379[13]> ttl expire:me
+(integer) 3
+127.0.0.1:6379[13]> hget expire:me name
+"tom"
+127.0.0.1:6379[13]> hget expire:me name
+(nil)
+
+
 Redis调试工具：
 	minitor/redis-benchmark			redis-cli -a "password" -n 13 monitor			./redis-benchmark -c 10 -n 100000
 		MONITOR 是一个调试命令，返回服务器处理的每一个命令，它能帮助我们了解在数据库上发生了什么操作，可以通过redis-cli和telnet命令使用.
