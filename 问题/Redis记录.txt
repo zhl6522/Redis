@@ -1,7 +1,7 @@
 解决并发重复写缓存：
     $timeout = 10;
     $key = 'room_lock_'.$room_id;
-    $isLock = RedisDaoModel::getInstance()->set($key, 1, array('nx', 'ex' => $timeout));
+    $isLock = RedisDaoModel::getInstance()->set($key, 1, array('nx', 'ex' => $timeout));//ex 秒
     if(!$isLock){
        return false;
     }
