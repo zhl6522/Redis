@@ -1,0 +1,10 @@
+解决并发写缓存：
+    $timeout = 10;
+    $key = 'room_lock_'.$room_id;
+    $isLock = RedisDaoModel::getInstance()->set($key, 1, array('nx', 'ex' => $timeout));
+    if(!$isLock){
+       return false;
+    }
+    //写缓存操作
+    http://doc.redisfans.com/string/set.html
+-----------------------------------------------------------------
